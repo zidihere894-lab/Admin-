@@ -3,73 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZIDDI ADMIN | File Upload Edition</title>
+    <title>ZIDDI ADMIN | Control Panel</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root {
-            --bg-color: #d1d9e6;
-            --text-color: #31344b;
-            --shadow-light: #ffffff;
-            --shadow-dark: #b8b9be;
-            --accent: #6c5ce7;
-        }
-
+        :root { --bg-color: #d1d9e6; --text-color: #31344b; --shadow-light: #ffffff; --shadow-dark: #b8b9be; --accent: #6c5ce7; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; }
-
         .admin-container { max-width: 900px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 30px; }
         .logo { font-family: 'Audiowide'; font-size: 2rem; color: var(--accent); }
 
-        .card {
-            background: var(--bg-color); border-radius: 20px; padding: 25px;
-            box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
-            margin-bottom: 30px;
-        }
+        /* Stats Card */
+        .stats-bar { display: flex; justify-content: center; margin-bottom: 20px; }
+        .stat-card { background: var(--bg-color); padding: 15px 30px; border-radius: 20px; box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light); text-align: center; }
+        .stat-card h2 { color: var(--accent); font-size: 1.8rem; }
 
+        .card { background: var(--bg-color); border-radius: 20px; padding: 25px; box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light); margin-bottom: 30px; }
         h3 { margin-bottom: 20px; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
 
-        input, select {
-            width: 100%; padding: 12px 20px; border-radius: 12px; border: none;
-            background: var(--bg-color); margin-bottom: 15px;
-            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
-            outline: none; color: var(--text-color);
-        }
-
-        /* File Input Styling */
-        .file-label {
-            display: block; width: 100%; padding: 12px; text-align: center;
-            background: #fff; border-radius: 12px; border: 2px dashed var(--accent);
-            cursor: pointer; margin-bottom: 15px; font-weight: 600;
-        }
-
-        .btn {
-            padding: 12px 25px; border-radius: 50px; border: none; cursor: pointer;
-            font-weight: bold; background: var(--accent); color: white;
-            box-shadow: 4px 4px 10px rgba(0,0,0,0.1); transition: 0.3s; width: 100%;
-        }
-        .btn:active { transform: scale(0.98); }
+        input { width: 100%; padding: 12px 20px; border-radius: 12px; border: none; background: var(--bg-color); margin-bottom: 15px; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); outline: none; color: var(--text-color); }
+        .file-label { display: block; width: 100%; padding: 12px; text-align: center; background: #fff; border-radius: 12px; border: 2px dashed var(--accent); cursor: pointer; margin-bottom: 15px; font-weight: 600; }
+        .btn { padding: 12px 25px; border-radius: 50px; border: none; cursor: pointer; font-weight: bold; background: var(--accent); color: white; width: 100%; transition: 0.3s; }
         
-        .tool-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 10px; border-bottom: 1px solid #b8b9be; margin-bottom: 10px;
-        }
-        .tool-item img { width: 40px; height: 40px; border-radius: 8px; }
-
-        #chat-display {
-            height: 300px; overflow-y: auto; background: rgba(255,255,255,0.3);
-            border-radius: 15px; padding: 15px; margin-bottom: 15px;
-            box-shadow: inset 2px 2px 5px var(--shadow-dark); display: flex; flex-direction: column;
-        }
-        .msg { margin-bottom: 10px; padding: 10px; border-radius: 10px; max-width: 80%; font-size: 0.9rem; }
-        .msg.member { background: #fff; align-self: flex-start; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+        /* Chat Design */
+        #chat-display { height: 400px; overflow-y: auto; background: rgba(255,255,255,0.3); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 15px; border-radius: 12px; max-width: 85%; position: relative; }
+        .msg-info { font-size: 0.65rem; font-weight: bold; margin-bottom: 4px; display: block; color: #555; }
+        .msg.member { background: #fff; align-self: flex-start; box-shadow: 3px 3px 6px var(--shadow-dark); }
         .msg.admin { background: var(--accent); color: white; align-self: flex-end; }
         
-        .chat-input-area { display: flex; gap: 10px; }
-        .btn-del { background: #ff4757; padding: 5px 12px; border-radius: 8px; color: #fff; border: none; font-size: 0.7rem; }
+        .tool-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #b8b9be; }
+        .tool-item img { width: 40px; height: 40px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -77,36 +44,40 @@
     <div class="admin-container">
         <header>
             <h1 class="logo">ZIDDI CONTROL PANEL</h1>
-            <p>Admin Mode: Manage Everything</p>
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <p>Total Logged-in Members</p>
+                    <h2 id="user-count">0</h2>
+                </div>
+            </div>
         </header>
 
         <div class="card">
-            <h3><i class="fas fa-plus-circle"></i> Add New Tool</h3>
+            <h3><i class="fas fa-plus-circle"></i> Add Tool (With Gallery Icon)</h3>
             <input type="text" id="toolName" placeholder="Tool Name">
-            <input type="text" id="toolCat" placeholder="Category (Hacking, Gaming etc.)">
-            <input type="text" id="toolUrl" placeholder="Target Link (URL)">
-            
+            <input type="text" id="toolCat" placeholder="Category">
+            <input type="text" id="toolUrl" placeholder="Target URL">
             <label class="file-label">
-                <i class="fas fa-image"></i> Choose Icon From Gallery
+                <i class="fas fa-image"></i> Choose Icon From Mobile
                 <input type="file" id="toolIconFile" accept="image/*" style="display: none;" onchange="previewFile()">
             </label>
-            <p id="fileName" style="font-size: 0.7rem; text-align: center; margin-top: -10px; margin-bottom: 10px; color: #666;"></p>
-
-            <button class="btn" id="uploadBtn" onclick="addTool()">UPLOAD TOOL TO SITE</button>
+            <button class="btn" id="uploadBtn" onclick="addTool()">UPLOAD TOOL</button>
         </div>
 
         <div class="card">
-            <h3><i class="fas fa-comments"></i> Live Chat Support</h3>
+            <h3><i class="fas fa-comments"></i> User Support (Member Wise)</h3>
             <div id="chat-display"></div>
-            <div class="chat-input-area">
-                <input type="text" id="adminMsg" placeholder="Type reply here..." style="margin:0;">
-                <button class="btn" style="width: auto;" onclick="sendReply()">SEND</button>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="replyTargetUid" placeholder="Paste User UID to Reply" style="flex:1; margin:0;">
+                <input type="text" id="adminMsg" placeholder="Type reply..." style="flex:2; margin:0;">
+                <button class="btn" style="width: auto;" onclick="sendReply()">REPLY</button>
             </div>
+            <p style="font-size: 0.7rem; color: #666; margin-top: 5px;">*Click on a user's message to automatically copy their UID.</p>
         </div>
 
         <div class="card">
-            <h3><i class="fas fa-list"></i> Current Tools List</h3>
-            <div id="tools-list">Loading tools...</div>
+            <h3><i class="fas fa-list"></i> Current Tools</h3>
+            <div id="tools-list">Loading...</div>
         </div>
     </div>
 
@@ -127,73 +98,33 @@
 
         let base64Icon = "";
 
-        // Function to handle image selection
         function previewFile() {
             const file = document.querySelector('#toolIconFile').files[0];
             const reader = new FileReader();
-            document.getElementById('fileName').innerText = "Selected: " + file.name;
-
-            reader.onloadend = function() {
-                base64Icon = reader.result;
-            }
-            if (file) {
-                reader.readAsDataURL(file);
-            }
+            reader.onloadend = () => { base64Icon = reader.result; alert("Icon Ready!"); }
+            if (file) reader.readAsDataURL(file);
         }
 
-        // Add Tool with Base64 Image
         async function addTool() {
             const name = document.getElementById('toolName').value;
-            const cat = document.getElementById('toolCat').value;
             const url = document.getElementById('toolUrl').value;
-            const btn = document.getElementById('uploadBtn');
-
-            if(!name || !url || !base64Icon) return alert("Please fill all fields and select an icon!");
-
-            btn.innerText = "Uploading...";
-            btn.disabled = true;
-
-            try {
-                await db.collection('tools').add({
-                    name: name,
-                    icon: base64Icon, // Mobile image saved here
-                    category: cat || "General",
-                    url: url,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                alert("Tool Added Successfully!");
-                location.reload();
-            } catch (e) {
-                alert("Error: " + e);
-                btn.disabled = false;
-                btn.innerText = "UPLOAD TOOL TO SITE";
-            }
+            if(!name || !url || !base64Icon) return alert("Fill all fields!");
+            await db.collection('tools').add({
+                name: name, icon: base64Icon, url: url, 
+                category: document.getElementById('toolCat').value || "General",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            location.reload();
         }
 
-        // List Tools
-        db.collection('tools').orderBy('createdAt', 'desc').onSnapshot(snap => {
-            const list = document.getElementById('tools-list');
-            list.innerHTML = '';
-            snap.forEach(doc => {
-                const t = doc.data();
-                const div = document.createElement('div');
-                div.className = 'tool-item';
-                div.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <img src="${t.icon}">
-                        <span><b>${t.name}</b></span>
-                    </div>
-                    <button class="btn-del" onclick="deleteTool('${doc.id}')">Delete</button>
-                `;
-                list.appendChild(div);
-            });
+        // 1. Fetch Total Members Count (Based on unique chat UIDs)
+        db.collection('chats').onSnapshot(snap => {
+            const uids = new Set();
+            snap.forEach(doc => { if(doc.data().uid) uids.add(doc.data().uid); });
+            document.getElementById('user-count').innerText = uids.size;
         });
 
-        function deleteTool(id) {
-            if(confirm("Delete this tool?")) db.collection('tools').doc(id).delete();
-        }
-
-        // Chat Management
+        // 2. Load Chats with User Names
         db.collection('chats').orderBy('time', 'asc').onSnapshot(snap => {
             const d = document.getElementById('chat-display');
             d.innerHTML = '';
@@ -201,22 +132,37 @@
                 const m = doc.data();
                 const div = document.createElement('div');
                 div.className = `msg ${m.sender}`;
-                div.innerText = m.text;
+                // Clicking message copies UID to reply box
+                div.onclick = () => { if(m.uid) document.getElementById('replyTargetUid').value = m.uid; };
+                
+                const nameTag = m.sender === 'member' ? `<span class="msg-info">${m.userName || 'Unknown'} (UID: ${m.uid})</span>` : `<span class="msg-info">Admin Reply</span>`;
+                div.innerHTML = `${nameTag} ${m.text}`;
                 d.appendChild(div);
             });
             d.scrollTop = d.scrollHeight;
         });
 
         function sendReply() {
+            const uid = document.getElementById('replyTargetUid').value;
             const txt = document.getElementById('adminMsg').value;
-            if(!txt) return;
+            if(!uid || !txt) return alert("Select a user message first!");
             db.collection('chats').add({
-                text: txt,
-                sender: 'admin',
+                text: txt, sender: 'admin', uid: uid,
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
             document.getElementById('adminMsg').value = '';
         }
+
+        db.collection('tools').orderBy('createdAt', 'desc').onSnapshot(snap => {
+            const list = document.getElementById('tools-list');
+            list.innerHTML = '';
+            snap.forEach(doc => {
+                const t = doc.data();
+                list.innerHTML += `<div class="tool-item"><div><img src="${t.icon}"> <b>${t.name}</b></div><button class="btn" style="width:auto; background:red;" onclick="deleteTool('${doc.id}')">Del</button></div>`;
+            });
+        });
+
+        function deleteTool(id) { if(confirm("Delete?")) db.collection('tools').doc(id).delete(); }
     </script>
 </body>
 </html>
