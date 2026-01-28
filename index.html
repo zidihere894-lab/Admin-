@@ -15,7 +15,7 @@
         .admin-container { max-width: 1000px; margin: 0 auto; }
         .logo { font-family: 'Audiowide'; font-size: 2rem; color: var(--accent); text-align: center; margin-bottom: 20px; }
         .card { background: var(--bg-color); border-radius: 20px; padding: 25px; box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light); margin-bottom: 25px; }
-        input { width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--bg-color); margin-bottom: 12px; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); outline: none; }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--bg-color); margin-bottom: 12px; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); outline: none; }
         .btn { padding: 12px; border-radius: 50px; border: none; cursor: pointer; font-weight: bold; background: var(--accent); color: white; transition: 0.3s; width: 100%; display: block; margin-top: 5px; }
         .tool-item, .member-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.2); margin-top: 8px; border-radius: 12px; border: 1px solid #b8b9be; }
         .tool-item img { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; }
@@ -23,6 +23,9 @@
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
         .status-active { background: #2ecc71; color: white; }
         .status-blocked { background: #e74c3c; color: white; }
+        h3 { margin-bottom: 15px; font-size: 1.1rem; color: var(--accent); }
+        label { font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; display: block; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     </style>
 </head>
 <body>
@@ -36,10 +39,70 @@
         </div>
 
         <div class="card">
-            <h3><i class="fas fa-plus-circle"></i> Add New Tool</h3>
+            <h3><i class="fas fa-lock"></i> Site Security Control</h3>
+            <div class="grid-2">
+                <div>
+                    <label>Password Status</label>
+                    <select id="pass-status">
+                        <option value="off">Disabled</option>
+                        <option value="on">Enabled (Locked)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Set Site Password</label>
+                    <input type="text" id="site-pass" placeholder="Enter Password">
+                </div>
+            </div>
+            <button class="btn" onclick="updateConfig('security')">SAVE SECURITY SETTINGS</button>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-bullhorn"></i> Announcement Pop-up</h3>
+            <label>Pop-up Message</label>
+            <textarea id="pop-text" rows="2" placeholder="Write message here..."></textarea>
+            <div class="grid-2">
+                <div>
+                    <label>Status</label>
+                    <select id="pop-status">
+                        <option value="hide">Hide</option>
+                        <option value="show">Show Always</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Button Text</label>
+                    <input type="text" id="pop-btn" placeholder="e.g. OK">
+                </div>
+            </div>
+            <button class="btn" onclick="updateConfig('popup')">UPDATE POP-UP</button>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-plus-circle"></i> Floating Action Button</h3>
+            <div class="grid-2">
+                <input type="text" id="float-text" placeholder="Button Text">
+                <input type="text" id="float-url" placeholder="Link URL">
+            </div>
+            <div class="grid-2">
+                <div>
+                    <label>Position</label>
+                    <select id="float-pos">
+                        <option value="bottom-left">Bottom Left</option>
+                        <option value="bottom-right">Bottom Right</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Theme Color</label>
+                    <input type="color" id="float-color" value="#6c5ce7" style="padding:2px; height:45px;">
+                </div>
+            </div>
+            <button class="btn" onclick="updateConfig('button')">DEPLOY FLOATING BUTTON</button>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-plus-square"></i> Add New Tool</h3>
             <input type="text" id="tName" placeholder="Tool Name">
             <input type="text" id="tUrl" placeholder="Link (URL)">
-            <label style="font-size:0.8rem; font-weight:600;">Tool Icon (Mobile Upload):</label>
+            <label>Tool Icon (Mobile Upload):</label>
             <input type="file" id="tFile" accept="image/*" style="box-shadow:none; background:transparent;">
             <button class="btn" id="addBtn" onclick="processAndSaveTool()">ADD TOOL PERMANENTLY</button>
         </div>
@@ -48,8 +111,8 @@
             <h3><i class="fas fa-comments"></i> Support Chat</h3>
             <div id="chat-display"></div>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <input type="text" id="targetUid" placeholder="User 8-Digit ID" style="flex:1; min-width:120px;">
-                <input type="text" id="adminReply" placeholder="Type reply..." style="flex:2; min-width:180px;">
+                <input type="text" id="targetUid" placeholder="User ID" style="flex:1;">
+                <input type="text" id="adminReply" placeholder="Type reply..." style="flex:2;">
                 <button class="btn" style="width: auto; padding: 10px 30px;" onclick="sendReply()">SEND</button>
             </div>
         </div>
@@ -75,6 +138,23 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // --- REMOTE CONFIG SYSTEM ---
+        async function updateConfig(type) {
+            let data = {};
+            if(type === 'security') {
+                data = { passEnabled: document.getElementById('pass-status').value, password: document.getElementById('site-pass').value };
+            } else if(type === 'popup') {
+                data = { popStatus: document.getElementById('pop-status').value, popMsg: document.getElementById('pop-text').value, popBtn: document.getElementById('pop-btn').value };
+            } else if(type === 'button') {
+                data = { btnText: document.getElementById('float-text').value, btnLink: document.getElementById('float-url').value, btnPos: document.getElementById('float-pos').value, btnColor: document.getElementById('float-color').value };
+            }
+
+            try {
+                await db.collection("site_settings").doc(type).set(data, { merge: true });
+                alert(type.toUpperCase() + " Updated on Main Website!");
+            } catch (err) { alert("Error: " + err.message); }
+        }
+
         // --- MEMBERS & BLOCKING ---
         db.collection('users').onSnapshot(snap => {
             const list = document.getElementById('members-list');
@@ -84,17 +164,8 @@
                 const isBlocked = user.isBlocked || false;
                 list.innerHTML += `
                     <div class="member-item">
-                        <div>
-                            <b>ID: ${user.shortId}</b> <br>
-                            <small>${user.email}</small>
-                            <span class="status-badge ${isBlocked ? 'status-blocked' : 'status-active'}">
-                                ${isBlocked ? 'Blocked' : 'Active'}
-                            </span>
-                        </div>
-                        <button class="btn" style="width:auto; background:${isBlocked ? '#2ecc71' : '#f39c12'}; font-size:0.75rem;" 
-                            onclick="toggleBlock('${doc.id}', ${isBlocked})">
-                            ${isBlocked ? 'Unblock' : 'Block'}
-                        </button>
+                        <div><b>ID: ${user.shortId}</b> <br> <small>${user.email}</small> <span class="status-badge ${isBlocked ? 'status-blocked' : 'status-active'}">${isBlocked ? 'Blocked' : 'Active'}</span></div>
+                        <button class="btn" style="width:auto; background:${isBlocked ? '#2ecc71' : '#f39c12'}; font-size:0.75rem;" onclick="toggleBlock('${doc.id}', ${isBlocked})">${isBlocked ? 'Unblock' : 'Block'}</button>
                     </div>`;
             });
         });
@@ -103,25 +174,21 @@
             await db.collection('users').doc(docId).update({ isBlocked: !currentStatus });
         }
 
-        // --- ADD TOOL WITH AUTO-RESIZE ---
+        // --- ADD TOOL ---
         async function processAndSaveTool() {
             const name = document.getElementById('tName').value;
             const url = document.getElementById('tUrl').value;
             const fileInput = document.getElementById('tFile');
             const btn = document.getElementById('addBtn');
-
             if(!name || !url) return alert("Fill Name and URL!");
-            
-            btn.innerText = "Processing Image..."; btn.disabled = true;
-
+            btn.innerText = "Processing..."; btn.disabled = true;
             let iconBase64 = "https://cdn-icons-png.flaticon.com/512/1243/1243911.png";
-
             if (fileInput.files.length > 0) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const img = new Image();
                     img.src = e.target.result;
-                    img.onload = async function() {
+                    img.onload = function() {
                         const canvas = document.createElement('canvas');
                         canvas.width = 100; canvas.height = 100;
                         canvas.getContext('2d').drawImage(img, 0, 0, 100, 100);
@@ -130,39 +197,26 @@
                     }
                 };
                 reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                saveData(name, url, iconBase64);
-            }
+            } else { saveData(name, url, iconBase64); }
         }
 
         async function saveData(n, u, i) {
             try {
-                await db.collection('tools').add({
-                    name: n, url: u, icon: i,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                alert("Tool Added Successfully!");
-                document.getElementById('tName').value = '';
-                document.getElementById('tUrl').value = '';
-                document.getElementById('tFile').value = '';
-            } catch (err) { alert("Error: " + err.message); }
+                await db.collection('tools').add({ name: n, url: u, icon: i, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                alert("Tool Added!");
+                document.getElementById('tName').value = ''; document.getElementById('tUrl').value = '';
+            } catch (err) { alert(err.message); }
             document.getElementById('addBtn').innerText = "ADD TOOL PERMANENTLY";
             document.getElementById('addBtn').disabled = false;
         }
 
-        // --- LIVE TOOLS LIST ---
+        // --- TOOLS LIST ---
         db.collection('tools').orderBy('createdAt', 'desc').onSnapshot(snap => {
             const list = document.getElementById('tools-list');
             list.innerHTML = '';
             snap.forEach(doc => {
                 const t = doc.data();
-                list.innerHTML += `
-                    <div class="tool-item">
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <img src="${t.icon}"> <b>${t.name}</b>
-                        </div>
-                        <button class="btn" style="width:auto; background:#e74c3c; padding:5px 15px;" onclick="db.collection('tools').doc('${doc.id}').delete()">Delete</button>
-                    </div>`;
+                list.innerHTML += `<div class="tool-item"><div style="display:flex; align-items:center; gap:10px;"><img src="${t.icon}"> <b>${t.name}</b></div><button class="btn" style="width:auto; background:#e74c3c; padding:5px 15px;" onclick="db.collection('tools').doc('${doc.id}').delete()">Delete</button></div>`;
             });
         });
 
@@ -185,12 +239,9 @@
             const uid = document.getElementById('targetUid').value;
             const msg = document.getElementById('adminReply').value;
             if(!uid || !msg) return alert("Enter ID and Message!");
-            await db.collection('chats').add({
-                text: msg, sender: 'admin', uid: uid,
-                time: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            await db.collection('chats').add({ text: msg, sender: 'admin', uid: uid, time: firebase.firestore.FieldValue.serverTimestamp() });
             document.getElementById('adminReply').value = '';
         }
     </script>
 </body>
-</html>
+                    </html>
