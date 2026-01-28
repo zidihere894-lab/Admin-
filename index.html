@@ -18,6 +18,7 @@
         input, select, textarea { width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--bg-color); margin-bottom: 12px; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); outline: none; }
         .btn { padding: 12px; border-radius: 50px; border: none; cursor: pointer; font-weight: bold; background: var(--accent); color: white; transition: 0.3s; width: 100%; display: block; margin-top: 5px; }
         .tool-item, .member-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.2); margin-top: 8px; border-radius: 12px; border: 1px solid #b8b9be; }
+        .tool-item { cursor: grab; }
         .tool-item img { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; }
         #chat-display { height: 250px; overflow-y: auto; background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; box-shadow: inset 3px 3px 6px #ddd; }
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
@@ -26,6 +27,7 @@
         h3 { margin-bottom: 15px; font-size: 1.1rem; color: var(--accent); }
         label { font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; display: block; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .sortable-ghost { opacity: 0.4; background: var(--accent) !important; color: white; }
     </style>
 </head>
 <body>
@@ -118,13 +120,15 @@
         </div>
 
         <div class="card">
-            <h3><i class="fas fa-tools"></i> Live Tools List</h3>
+            <h3><i class="fas fa-tools"></i> Live Tools List (Drag to Reorder)</h3>
             <div id="tools-list">Loading tools...</div>
+            <p style="font-size: 0.7rem; color: #777; margin-top: 10px;">* Drag items to reorder. Purane tools bhi yahan show honge.</p>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -138,7 +142,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- REMOTE CONFIG SYSTEM ---
+        // --- REMOTE CONFIG ---
         async function updateConfig(type) {
             let data = {};
             if(type === 'security') {
@@ -148,25 +152,20 @@
             } else if(type === 'button') {
                 data = { btnText: document.getElementById('float-text').value, btnLink: document.getElementById('float-url').value, btnPos: document.getElementById('float-pos').value, btnColor: document.getElementById('float-color').value };
             }
-
             try {
                 await db.collection("site_settings").doc(type).set(data, { merge: true });
-                alert(type.toUpperCase() + " Updated on Main Website!");
-            } catch (err) { alert("Error: " + err.message); }
+                alert(type.toUpperCase() + " Updated!");
+            } catch (err) { alert(err.message); }
         }
 
-        // --- MEMBERS & BLOCKING ---
+        // --- MEMBERS ---
         db.collection('users').onSnapshot(snap => {
             const list = document.getElementById('members-list');
             list.innerHTML = '';
             snap.forEach(doc => {
                 const user = doc.data();
                 const isBlocked = user.isBlocked || false;
-                list.innerHTML += `
-                    <div class="member-item">
-                        <div><b>ID: ${user.shortId}</b> <br> <small>${user.email}</small> <span class="status-badge ${isBlocked ? 'status-blocked' : 'status-active'}">${isBlocked ? 'Blocked' : 'Active'}</span></div>
-                        <button class="btn" style="width:auto; background:${isBlocked ? '#2ecc71' : '#f39c12'}; font-size:0.75rem;" onclick="toggleBlock('${doc.id}', ${isBlocked})">${isBlocked ? 'Unblock' : 'Block'}</button>
-                    </div>`;
+                list.innerHTML += `<div class="member-item"><div><b>ID: ${user.shortId}</b> <br> <small>${user.email}</small> <span class="status-badge ${isBlocked ? 'status-blocked' : 'status-active'}">${isBlocked ? 'Blocked' : 'Active'}</span></div><button class="btn" style="width:auto; background:${isBlocked ? '#2ecc71' : '#f39c12'}; font-size:0.75rem;" onclick="toggleBlock('${doc.id}', ${isBlocked})">${isBlocked ? 'Unblock' : 'Block'}</button></div>`;
             });
         });
 
@@ -182,6 +181,10 @@
             const btn = document.getElementById('addBtn');
             if(!name || !url) return alert("Fill Name and URL!");
             btn.innerText = "Processing..."; btn.disabled = true;
+
+            const snap = await db.collection('tools').get();
+            let newOrder = snap.size; 
+
             let iconBase64 = "https://cdn-icons-png.flaticon.com/512/1243/1243911.png";
             if (fileInput.files.length > 0) {
                 const reader = new FileReader();
@@ -193,16 +196,16 @@
                         canvas.width = 100; canvas.height = 100;
                         canvas.getContext('2d').drawImage(img, 0, 0, 100, 100);
                         iconBase64 = canvas.toDataURL('image/jpeg', 0.7);
-                        saveData(name, url, iconBase64);
+                        saveData(name, url, iconBase64, newOrder);
                     }
                 };
                 reader.readAsDataURL(fileInput.files[0]);
-            } else { saveData(name, url, iconBase64); }
+            } else { saveData(name, url, iconBase64, newOrder); }
         }
 
-        async function saveData(n, u, i) {
+        async function saveData(n, u, i, o) {
             try {
-                await db.collection('tools').add({ name: n, url: u, icon: i, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                await db.collection('tools').add({ name: n, url: u, icon: i, order: o, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
                 alert("Tool Added!");
                 document.getElementById('tName').value = ''; document.getElementById('tUrl').value = '';
             } catch (err) { alert(err.message); }
@@ -210,17 +213,35 @@
             document.getElementById('addBtn').disabled = false;
         }
 
-        // --- TOOLS LIST ---
-        db.collection('tools').orderBy('createdAt', 'desc').onSnapshot(snap => {
-            const list = document.getElementById('tools-list');
-            list.innerHTML = '';
-            snap.forEach(doc => {
-                const t = doc.data();
-                list.innerHTML += `<div class="tool-item"><div style="display:flex; align-items:center; gap:10px;"><img src="${t.icon}"> <b>${t.name}</b></div><button class="btn" style="width:auto; background:#e74c3c; padding:5px 15px;" onclick="db.collection('tools').doc('${doc.id}').delete()">Delete</button></div>`;
+        // --- DRAG & DROP LIST (FIXED LOADING) ---
+        const toolsList = document.getElementById('tools-list');
+        Sortable.create(toolsList, {
+            animation: 150,
+            onEnd: async function() {
+                const items = toolsList.querySelectorAll('.tool-item');
+                const batch = db.batch();
+                items.forEach((item, index) => {
+                    batch.update(db.collection('tools').doc(item.getAttribute('data-id')), { order: index });
+                });
+                await batch.commit();
+            }
+        });
+
+        // Snap shot without strict orderBy to ensure old tools show up
+        db.collection('tools').onSnapshot(snap => {
+            let tools = [];
+            snap.forEach(doc => tools.push({id: doc.id, ...doc.data()}));
+            
+            // Client-side sorting: order field missing ho toh 99999 pe rakhein
+            tools.sort((a, b) => (a.order ?? 99999) - (b.order ?? 99999));
+
+            toolsList.innerHTML = '';
+            tools.forEach(t => {
+                toolsList.innerHTML += `<div class="tool-item" data-id="${t.id}"><div style="display:flex; align-items:center; gap:10px;"><i class="fas fa-grip-vertical" style="color:#aaa;"></i><img src="${t.icon}"><b>${t.name}</b></div><button class="btn" style="width:auto; background:#e74c3c; padding:5px 15px;" onclick="db.collection('tools').doc('${t.id}').delete()">Delete</button></div>`;
             });
         });
 
-        // --- CHAT SYSTEM ---
+        // --- CHAT ---
         db.collection('chats').orderBy('time', 'asc').onSnapshot(snap => {
             const d = document.getElementById('chat-display');
             d.innerHTML = '';
@@ -244,4 +265,4 @@
         }
     </script>
 </body>
-                    </html>
+    </html>
