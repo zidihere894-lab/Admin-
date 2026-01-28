@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZIDDI ADMIN | Control Panel</title>
+    <title>ZIDDI ADMIN | Full Control Panel</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,73 +11,52 @@
     <style>
         :root { --bg-color: #d1d9e6; --text-color: #31344b; --shadow-light: #ffffff; --shadow-dark: #b8b9be; --accent: #6c5ce7; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; }
-        .admin-container { max-width: 900px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 30px; }
-        .logo { font-family: 'Audiowide'; font-size: 2rem; color: var(--accent); }
-
-        /* Stats Card */
-        .stats-bar { display: flex; justify-content: center; margin-bottom: 20px; }
-        .stat-card { background: var(--bg-color); padding: 15px 30px; border-radius: 20px; box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light); text-align: center; }
-        .stat-card h2 { color: var(--accent); font-size: 1.8rem; }
-
-        .card { background: var(--bg-color); border-radius: 20px; padding: 25px; box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light); margin-bottom: 30px; }
-        h3 { margin-bottom: 20px; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
-
-        input { width: 100%; padding: 12px 20px; border-radius: 12px; border: none; background: var(--bg-color); margin-bottom: 15px; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); outline: none; color: var(--text-color); }
-        .file-label { display: block; width: 100%; padding: 12px; text-align: center; background: #fff; border-radius: 12px; border: 2px dashed var(--accent); cursor: pointer; margin-bottom: 15px; font-weight: 600; }
-        .btn { padding: 12px 25px; border-radius: 50px; border: none; cursor: pointer; font-weight: bold; background: var(--accent); color: white; width: 100%; transition: 0.3s; }
-        
-        /* Chat Design */
-        #chat-display { height: 400px; overflow-y: auto; background: rgba(255,255,255,0.3); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 15px; border-radius: 12px; max-width: 85%; position: relative; }
-        .msg-info { font-size: 0.65rem; font-weight: bold; margin-bottom: 4px; display: block; color: #555; }
-        .msg.member { background: #fff; align-self: flex-start; box-shadow: 3px 3px 6px var(--shadow-dark); }
-        .msg.admin { background: var(--accent); color: white; align-self: flex-end; }
-        
-        .tool-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #b8b9be; }
-        .tool-item img { width: 40px; height: 40px; border-radius: 8px; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; }
+        .admin-container { max-width: 1000px; margin: 0 auto; }
+        .logo { font-family: 'Audiowide'; font-size: 2rem; color: var(--accent); text-align: center; margin-bottom: 20px; }
+        .card { background: var(--bg-color); border-radius: 20px; padding: 25px; box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light); margin-bottom: 25px; }
+        input { width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--bg-color); margin-bottom: 12px; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); outline: none; }
+        .btn { padding: 12px; border-radius: 50px; border: none; cursor: pointer; font-weight: bold; background: var(--accent); color: white; transition: 0.3s; width: 100%; display: block; margin-top: 5px; }
+        .tool-item, .member-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.2); margin-top: 8px; border-radius: 12px; border: 1px solid #b8b9be; }
+        .tool-item img { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; }
+        #chat-display { height: 250px; overflow-y: auto; background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; box-shadow: inset 3px 3px 6px #ddd; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
+        .status-active { background: #2ecc71; color: white; }
+        .status-blocked { background: #e74c3c; color: white; }
     </style>
 </head>
 <body>
 
     <div class="admin-container">
-        <header>
-            <h1 class="logo">ZIDDI CONTROL PANEL</h1>
-            <div class="stats-bar">
-                <div class="stat-card">
-                    <p>Total Logged-in Members</p>
-                    <h2 id="user-count">0</h2>
-                </div>
-            </div>
-        </header>
+        <h1 class="logo">ZIDDI ADMIN HUB</h1>
 
         <div class="card">
-            <h3><i class="fas fa-plus-circle"></i> Add Tool (With Gallery Icon)</h3>
-            <input type="text" id="toolName" placeholder="Tool Name">
-            <input type="text" id="toolCat" placeholder="Category">
-            <input type="text" id="toolUrl" placeholder="Target URL">
-            <label class="file-label">
-                <i class="fas fa-image"></i> Choose Icon From Mobile
-                <input type="file" id="toolIconFile" accept="image/*" style="display: none;" onchange="previewFile()">
-            </label>
-            <button class="btn" id="uploadBtn" onclick="addTool()">UPLOAD TOOL</button>
+            <h3><i class="fas fa-users"></i> Registered Members</h3>
+            <div id="members-list">Loading members...</div>
         </div>
 
         <div class="card">
-            <h3><i class="fas fa-comments"></i> User Support (Member Wise)</h3>
+            <h3><i class="fas fa-plus-circle"></i> Add New Tool</h3>
+            <input type="text" id="tName" placeholder="Tool Name">
+            <input type="text" id="tUrl" placeholder="Link (URL)">
+            <label style="font-size:0.8rem; font-weight:600;">Tool Icon (Mobile Upload):</label>
+            <input type="file" id="tFile" accept="image/*" style="box-shadow:none; background:transparent;">
+            <button class="btn" id="addBtn" onclick="processAndSaveTool()">ADD TOOL PERMANENTLY</button>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-comments"></i> Support Chat</h3>
             <div id="chat-display"></div>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="replyTargetUid" placeholder="Paste User UID to Reply" style="flex:1; margin:0;">
-                <input type="text" id="adminMsg" placeholder="Type reply..." style="flex:2; margin:0;">
-                <button class="btn" style="width: auto;" onclick="sendReply()">REPLY</button>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="targetUid" placeholder="User 8-Digit ID" style="flex:1; min-width:120px;">
+                <input type="text" id="adminReply" placeholder="Type reply..." style="flex:2; min-width:180px;">
+                <button class="btn" style="width: auto; padding: 10px 30px;" onclick="sendReply()">SEND</button>
             </div>
-            <p style="font-size: 0.7rem; color: #666; margin-top: 5px;">*Click on a user's message to automatically copy their UID.</p>
         </div>
 
         <div class="card">
-            <h3><i class="fas fa-list"></i> Current Tools</h3>
-            <div id="tools-list">Loading...</div>
+            <h3><i class="fas fa-tools"></i> Live Tools List</h3>
+            <div id="tools-list">Loading tools...</div>
         </div>
     </div>
 
@@ -96,73 +75,122 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let base64Icon = "";
-
-        function previewFile() {
-            const file = document.querySelector('#toolIconFile').files[0];
-            const reader = new FileReader();
-            reader.onloadend = () => { base64Icon = reader.result; alert("Icon Ready!"); }
-            if (file) reader.readAsDataURL(file);
-        }
-
-        async function addTool() {
-            const name = document.getElementById('toolName').value;
-            const url = document.getElementById('toolUrl').value;
-            if(!name || !url || !base64Icon) return alert("Fill all fields!");
-            await db.collection('tools').add({
-                name: name, icon: base64Icon, url: url, 
-                category: document.getElementById('toolCat').value || "General",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        // --- MEMBERS & BLOCKING ---
+        db.collection('users').onSnapshot(snap => {
+            const list = document.getElementById('members-list');
+            list.innerHTML = '';
+            snap.forEach(doc => {
+                const user = doc.data();
+                const isBlocked = user.isBlocked || false;
+                list.innerHTML += `
+                    <div class="member-item">
+                        <div>
+                            <b>ID: ${user.shortId}</b> <br>
+                            <small>${user.email}</small>
+                            <span class="status-badge ${isBlocked ? 'status-blocked' : 'status-active'}">
+                                ${isBlocked ? 'Blocked' : 'Active'}
+                            </span>
+                        </div>
+                        <button class="btn" style="width:auto; background:${isBlocked ? '#2ecc71' : '#f39c12'}; font-size:0.75rem;" 
+                            onclick="toggleBlock('${doc.id}', ${isBlocked})">
+                            ${isBlocked ? 'Unblock' : 'Block'}
+                        </button>
+                    </div>`;
             });
-            location.reload();
-        }
-
-        // 1. Fetch Total Members Count (Based on unique chat UIDs)
-        db.collection('chats').onSnapshot(snap => {
-            const uids = new Set();
-            snap.forEach(doc => { if(doc.data().uid) uids.add(doc.data().uid); });
-            document.getElementById('user-count').innerText = uids.size;
         });
 
-        // 2. Load Chats with User Names
+        async function toggleBlock(docId, currentStatus) {
+            await db.collection('users').doc(docId).update({ isBlocked: !currentStatus });
+        }
+
+        // --- ADD TOOL WITH AUTO-RESIZE ---
+        async function processAndSaveTool() {
+            const name = document.getElementById('tName').value;
+            const url = document.getElementById('tUrl').value;
+            const fileInput = document.getElementById('tFile');
+            const btn = document.getElementById('addBtn');
+
+            if(!name || !url) return alert("Fill Name and URL!");
+            
+            btn.innerText = "Processing Image..."; btn.disabled = true;
+
+            let iconBase64 = "https://cdn-icons-png.flaticon.com/512/1243/1243911.png";
+
+            if (fileInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = async function() {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 100; canvas.height = 100;
+                        canvas.getContext('2d').drawImage(img, 0, 0, 100, 100);
+                        iconBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                        saveData(name, url, iconBase64);
+                    }
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveData(name, url, iconBase64);
+            }
+        }
+
+        async function saveData(n, u, i) {
+            try {
+                await db.collection('tools').add({
+                    name: n, url: u, icon: i,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("Tool Added Successfully!");
+                document.getElementById('tName').value = '';
+                document.getElementById('tUrl').value = '';
+                document.getElementById('tFile').value = '';
+            } catch (err) { alert("Error: " + err.message); }
+            document.getElementById('addBtn').innerText = "ADD TOOL PERMANENTLY";
+            document.getElementById('addBtn').disabled = false;
+        }
+
+        // --- LIVE TOOLS LIST ---
+        db.collection('tools').orderBy('createdAt', 'desc').onSnapshot(snap => {
+            const list = document.getElementById('tools-list');
+            list.innerHTML = '';
+            snap.forEach(doc => {
+                const t = doc.data();
+                list.innerHTML += `
+                    <div class="tool-item">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="${t.icon}"> <b>${t.name}</b>
+                        </div>
+                        <button class="btn" style="width:auto; background:#e74c3c; padding:5px 15px;" onclick="db.collection('tools').doc('${doc.id}').delete()">Delete</button>
+                    </div>`;
+            });
+        });
+
+        // --- CHAT SYSTEM ---
         db.collection('chats').orderBy('time', 'asc').onSnapshot(snap => {
             const d = document.getElementById('chat-display');
             d.innerHTML = '';
             snap.forEach(doc => {
                 const m = doc.data();
                 const div = document.createElement('div');
-                div.className = `msg ${m.sender}`;
-                // Clicking message copies UID to reply box
-                div.onclick = () => { if(m.uid) document.getElementById('replyTargetUid').value = m.uid; };
-                
-                const nameTag = m.sender === 'member' ? `<span class="msg-info">${m.userName || 'Unknown'} (UID: ${m.uid})</span>` : `<span class="msg-info">Admin Reply</span>`;
-                div.innerHTML = `${nameTag} ${m.text}`;
+                div.style.padding = "8px"; div.style.borderBottom = "1px solid #eee"; div.style.cursor = "pointer";
+                div.onclick = () => document.getElementById('targetUid').value = m.uid;
+                div.innerHTML = `<b>${m.sender === 'admin' ? 'ADMIN' : (m.userName + ' [' + m.uid + ']')}</b>: ${m.text}`;
                 d.appendChild(div);
             });
             d.scrollTop = d.scrollHeight;
         });
 
-        function sendReply() {
-            const uid = document.getElementById('replyTargetUid').value;
-            const txt = document.getElementById('adminMsg').value;
-            if(!uid || !txt) return alert("Select a user message first!");
-            db.collection('chats').add({
-                text: txt, sender: 'admin', uid: uid,
+        async function sendReply() {
+            const uid = document.getElementById('targetUid').value;
+            const msg = document.getElementById('adminReply').value;
+            if(!uid || !msg) return alert("Enter ID and Message!");
+            await db.collection('chats').add({
+                text: msg, sender: 'admin', uid: uid,
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
-            document.getElementById('adminMsg').value = '';
+            document.getElementById('adminReply').value = '';
         }
-
-        db.collection('tools').orderBy('createdAt', 'desc').onSnapshot(snap => {
-            const list = document.getElementById('tools-list');
-            list.innerHTML = '';
-            snap.forEach(doc => {
-                const t = doc.data();
-                list.innerHTML += `<div class="tool-item"><div><img src="${t.icon}"> <b>${t.name}</b></div><button class="btn" style="width:auto; background:red;" onclick="deleteTool('${doc.id}')">Del</button></div>`;
-            });
-        });
-
-        function deleteTool(id) { if(confirm("Delete?")) db.collection('tools').doc(id).delete(); }
     </script>
 </body>
 </html>
